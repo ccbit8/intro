@@ -34,7 +34,7 @@ export default function Home() {
             </a>
           </Button>
           <Button variant="ghost" size="sm" className="w-9 px-0" asChild>
-            <a href="/video-chat">
+            <a href="https://chat.caelus.cc">
               <Headphones />
             </a>
           </Button>
