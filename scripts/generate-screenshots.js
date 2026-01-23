@@ -1,6 +1,7 @@
 /**
  * 预生成截图工具（改进版本）
  * 在构建时运行，将外部网站截图下载到本地
+ * 下载完成后自动压缩图片
  * 使用方式：node scripts/generate-screenshots.js
  */
 
@@ -8,6 +9,15 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const http = require('http');
+
+// 可选：尝试加载 sharp 库用于压缩
+let sharp;
+try {
+  sharp = require('sharp');
+} catch (err) {
+  console.warn('⚠️  未安装 sharp 库，将跳过图片压缩');
+  console.warn('   使用: npm install --save-dev sharp\n');
+}
 
 // 需要生成截图的 URL 列表
 const urls = [
@@ -36,6 +46,61 @@ if (!fs.existsSync(OUTPUT_DIR)) {
 function getFilename(url) {
   const hash = url.split('//')[1]?.split('/')[0]?.replace(/\./g, '-') || 'default';
   return `${hash}.png`;
+}
+
+/**
+ * 压缩单个图片（可选）
+ */
+async function compressImage(filePath) {
+  if (!sharp) return null; // 未安装 sharp，跳过压缩
+
+  try {
+    const inputSize = fs.statSync(filePath).size;
+    const tempPath = `${filePath}.tmp`;
+
+    // 获取图片信息
+    const metadata = await sharp(filePath).metadata();
+
+    // 根据原始大小决定压缩质量
+    let quality = 80;
+    if (inputSize > 2000000) quality = 70;
+    else if (inputSize > 1000000) quality = 75;
+
+    // 压缩 PNG
+    let pipeline = sharp(filePath);
+    if (metadata.width > 2000 || metadata.height > 2000) {
+      pipeline = pipeline.resize(2000, 2000, {
+        fit: 'inside',
+        withoutEnlargement: true
+      });
+    }
+
+    await pipeline
+      .png({
+        quality: 80,
+        effort: 9,
+        adaptiveFiltering: true
+      })
+      .toFile(tempPath);
+
+    const outputSize = fs.statSync(tempPath).size;
+    const savedPercent = ((1 - outputSize / inputSize) * 100).toFixed(1);
+
+    if (outputSize < inputSize) {
+      fs.renameSync(tempPath, filePath);
+      return {
+        original: inputSize,
+        compressed: outputSize,
+        percent: savedPercent
+      };
+    } else {
+      if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+      return null;
+    }
+  } catch (error) {
+    console.warn(`⚠️  压缩失败: ${error.message}`);
+    return null;
+  }
 }
 
 /**
@@ -112,7 +177,18 @@ async function downloadScreenshot(url) {
 
   try {
     const size = await downloadFile(screenshotUrl, filepath);
-    console.log(`✅ 完成 (${(size/1024).toFixed(1)}KB): ${filename}\n`);
+    
+    // 尝试压缩图片
+    let compressed = null;
+    if (sharp) {
+      compressed = await compressImage(filepath);
+    }
+    
+    if (compressed) {
+      console.log(`✅ 完成 (${(compressed.original/1024).toFixed(1)}KB → ${(compressed.compressed/1024).toFixed(1)}KB, 节省${compressed.percent}%): ${filename}\n`);
+    } else {
+      console.log(`✅ 完成 (${(size/1024).toFixed(1)}KB): ${filename}\n`);
+    }
     return true;
   } catch (error) {
     console.error(`❌ 失败: ${error.message}`);
@@ -151,8 +227,18 @@ async function main() {
   console.log(`📁 文件保存在: ${OUTPUT_DIR}\n`);
   
   if (failed > 0) {
-    console.log('💡 提示: 失败的截图使用 SVG 占位图，可稍后重试');
-    process.exit(failed > 5 ? 1 : 0); // 失败太多时报错
+    console.log('💡 提示: 失败的截图使用 SVG 占位图，可稍后重试\n');
+  }
+
+  // 如果安装了 sharp，提示可以进一步压缩
+  if (!sharp) {
+    console.log('💡 提示: 安装 sharp 库可以自动压缩图片');
+    console.log('   运行: npm install --save-dev sharp');
+    console.log('   然后: npm run compress\n');
+  }
+  
+  if (failed > 0) {
+    process.exit(failed > 5 ? 1 : 0);
   }
 }
 
