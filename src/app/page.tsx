@@ -1,12 +1,8 @@
-import React from "react";
-import { allSnippets } from "contentlayer/generated";
-import { Snippet } from "@/components/snippet";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, } from "@/components/ui/accordion";
+import React, { Suspense, lazy } from "react";
 import { ModeToggle } from "@/components/theme/toggle-mode";
 import { Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LangToggle from "@/components/theme/toggle-lang";
-import ChatDialog from '@/components/ai/chat-dialog'
 import IndexRadar from "@/app/_components/index-radar";
 import TechStack from "@/app/_components/tech-stack";
 import Capabilities from "@/app/_components/capabilities";
@@ -14,9 +10,14 @@ import Card from "./_components/card";
 import { projects, notes, tools } from "@/data/site-data";
 import { Headphones } from "lucide-react";
 
+// 延迟加载非关键组件
+const ChatDialog = lazy(() => import('@/components/ai/chat-dialog'))
+
 // const snippets = allSnippets.sort((a, b) => a.order - b.order);
 
-
+// ✅ 强制静态生成，避免每次请求都重新渲染
+export const dynamic = 'force-static'
+export const revalidate = 3600 // 每小时重新生成一次
 
 export default function Home() {
   return (
@@ -38,7 +39,9 @@ export default function Home() {
               <Headphones />
             </a>
           </Button>
-          <ChatDialog />
+          <Suspense fallback={<div className="w-9 h-9" />}>
+            <ChatDialog />
+          </Suspense>
         </div>
       </div>
       <div className="flex flex-col gap-8 w-full max-w-[1280px] relative mx-auto flex-1 p-4 border border-border backdrop-blur-[2px] rounded-lg">

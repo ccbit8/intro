@@ -7,6 +7,10 @@ type Message = {
   function_call?: any
 }
 
+// ✅ 配置 API 响应缓存
+export const revalidate = 0 // 不缓存 POST 请求
+export const dynamic = 'force-dynamic' // 强制动态响应
+
 export async function POST(req: Request) {
   try {
     const { prompt, messages: historyMessages, lastEventId } = await req.json()

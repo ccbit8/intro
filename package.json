@@ -19,11 +19,14 @@
   "scripts": {
     "dev": "next dev",
     "dev:socket": "node server.js",
-    "build": "next build",
+    "prebuild": "node scripts/create-placeholders.js",
+    "build": "next build && node scripts/post-build.js",
     "start": "next start",
+    "start:standalone": "node .next/standalone/server.js",
     "start:socket": "NODE_ENV=production node server.js",
     "lint": "next lint",
-    "tsc": "tsc"
+    "tsc": "tsc",
+    "screenshots": "node scripts/generate-screenshots.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",

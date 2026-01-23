@@ -1,71 +1,78 @@
 const { createServer } = require('http')
 const { parse } = require('url')
 const next = require('next')
-const { Server } = require('socket.io')
 
 const dev = process.env.NODE_ENV !== 'production'
-// 生产环境绑定 0.0.0.0 允许外部访问，开发环境用 localhost
 const hostname = dev ? 'localhost' : '0.0.0.0'
 const port = parseInt(process.env.PORT || '3000', 10)
-const socketPort = parseInt(process.env.SOCKET_PORT || '3001', 10)
 
 const app = next({ dev, hostname, port })
 const handle = app.getRequestHandler()
 
+// ✅ 性能监控
+const requestMetrics = {
+  totalRequests: 0,
+  slowRequests: 0,
+  avgResponseTime: 0,
+  maxResponseTime: 0,
+}
+
 app.prepare().then(() => {
-  // Next.js HTTP 服务器
   const nextServer = createServer((req, res) => {
+    const startTime = Date.now()
     const parsedUrl = parse(req.url, true)
+
+    // ✅ 响应优化 - 添加性能相关的头部
+    res.setHeader('X-Content-Type-Options', 'nosniff')
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN')
+    res.setHeader('X-XSS-Protection', '1; mode=block')
+
+    // ✅ 监听响应完成
+    const originalEnd = res.end.bind(res)
+    res.end = function(...args) {
+      const duration = Date.now() - startTime
+      requestMetrics.totalRequests++
+      requestMetrics.avgResponseTime = 
+        (requestMetrics.avgResponseTime * (requestMetrics.totalRequests - 1) + duration) / requestMetrics.totalRequests
+      
+      if (duration > requestMetrics.maxResponseTime) {
+        requestMetrics.maxResponseTime = duration
+      }
+
+      // ⚠️ 记录缓慢请求
+      if (duration > 1000) {
+        requestMetrics.slowRequests++
+        if (process.env.NODE_ENV === 'production') {
+          console.warn(`[SLOW] ${req.method} ${req.url} took ${duration}ms`)
+        }
+      }
+
+      // 定期输出性能统计
+      if (requestMetrics.totalRequests % 100 === 0) {
+        console.log(`[PERF] Avg: ${requestMetrics.avgResponseTime.toFixed(2)}ms, Max: ${requestMetrics.maxResponseTime}ms, Slow: ${requestMetrics.slowRequests}/${requestMetrics.totalRequests}`)
+      }
+
+      return originalEnd(...args)
+    }
+
     handle(req, res, parsedUrl)
   })
 
-  // 独立的 Socket.IO 服务器
-  const socketServer = createServer()
-  const io = new Server(socketServer, {
-    cors: {
-      origin: '*',
-      methods: ['GET', 'POST'],
-    },
-    transports: ['websocket'],
-    pingTimeout: 60000,
-    pingInterval: 25000,
-  })
+  // ✅ 服务器连接管理
+  nextServer.maxConnections = 1000
+  nextServer.timeout = 30000 // 30 秒超时
   
-  io.on('connection', (socket) => {
-    console.log('Socket connected:', socket.id)
-
-    socket.on('join', (roomId) => {
-      socket.join(roomId)
-      console.log(`Socket ${socket.id} joined room ${roomId}`)
-      socket.to(roomId).emit('peer:joined', { socketId: socket.id })
-    })
-
-    socket.on('signal:offer', ({ roomId, sdp }) => {
-      console.log(`Offer from ${socket.id} to room ${roomId}`)
-      socket.to(roomId).emit('signal:offer', { sdp })
-    })
-
-    socket.on('signal:answer', ({ roomId, sdp }) => {
-      console.log(`Answer from ${socket.id} to room ${roomId}`)
-      socket.to(roomId).emit('signal:answer', { sdp })
-    })
-
-    socket.on('signal:ice', ({ roomId, candidate, side }) => {
-      socket.to(roomId).emit('signal:ice', { candidate, side })
-    })
-
-    socket.on('disconnect', (reason) => {
-      console.log('Socket disconnected:', socket.id, 'reason:', reason)
-    })
+  nextServer.listen(port, hostname, () => {
+    console.log(`> Server ready on http://${hostname}:${port}`)
+    console.log(`> Environment: ${process.env.NODE_ENV || 'development'}`)
   })
 
-  // 启动 Next.js 服务器
-  nextServer.listen(port, () => {
-    console.log(`> Next.js ready on http://${hostname}:${port}`)
-  })
-
-  // 启动 Socket.IO 服务器
-  socketServer.listen(socketPort, () => {
-    console.log(`> Socket.IO ready on http://${hostname}:${socketPort}`)
+  // ✅ 优雅关闭
+  process.on('SIGTERM', () => {
+    console.log('SIGTERM received, closing server...')
+    nextServer.close(() => {
+      console.log('Server closed')
+      process.exit(0)
+    })
   })
 })

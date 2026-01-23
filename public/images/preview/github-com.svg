@@ -1,0 +1,9 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#f3f4f6"/>
+  <text x="50%" y="45%" font-family="Arial, sans-serif" font-size="32" fill="#6b7280" text-anchor="middle" dominant-baseline="middle">
+    github.com
+  </text>
+  <text x="50%" y="55%" font-family="Arial, sans-serif" font-size="18" fill="#9ca3af" text-anchor="middle" dominant-baseline="middle">
+    Placeholder - Replace with actual screenshot
+  </text>
+</svg>

@@ -8,11 +8,15 @@ import PlausibleProvider from "next-plausible";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ 
+  subsets: ["latin"],
+  display: 'swap', // 关键优化：确保字体加载期间文本可见
+});
 
 const myFont = localFont({
   src: "./public/fonts/CalSans-SemiBold.ttf",
   variable: "--font-calsans",
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -33,6 +37,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* 预加载字体 */}
+        <link
+          rel="preload"
+          href="/fonts/CalSans-SemiBold.ttf"
+          as="font"
+          type="font/ttf"
+          crossOrigin="anonymous"
+        />
+      </head>
       <PlausibleProvider domain="caelus.cc">
         <body className={`${inter.className} ${myFont.variable}`}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
