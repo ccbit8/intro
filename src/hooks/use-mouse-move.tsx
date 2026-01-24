@@ -1,26 +1,36 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
 
-export default function useMouseMove() {
+export default function useMouseMove<T extends HTMLElement>() {
+  const ref = useRef<T>(null);
+
   React.useEffect(() => {
     let ticking = false;
+    let scale = 1;
+
+    // Cache scale to avoid layout thrashing during mouse move
+    function updateScale() {
+       if (window.visualViewport) {
+         scale = window.visualViewport.scale;
+       }
+    }
+
+    // Initial scale
+    updateScale();
 
     function mouseMoveEvent(e: MouseEvent) {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          const scale = window.visualViewport?.scale;
           // disable mouse movement on viewport zoom - causes page to slow down
-          if (scale === 1) {
-            const body = document.body;
-
+          if (scale === 1 && ref.current) {
             const targetX = e.clientX;
             const targetY = e.clientY;
 
-            // TODO: make it move around cursor so you feal like its floating around it
-            // the animation requires tranformX and transformY on the HTML Element
-            body.style.setProperty("--x", `${targetX}px`);
-            body.style.setProperty("--y", `${targetY}px`);
+            // Apply custom properties to the specific element instead of body
+            // This reduces the scope of style invalidation and prevents global reflows
+            ref.current.style.setProperty("--x", `${targetX}px`);
+            ref.current.style.setProperty("--y", `${targetY}px`);
           }
           ticking = false;
         });
@@ -29,8 +39,17 @@ export default function useMouseMove() {
     }
 
     document.addEventListener("mousemove", mouseMoveEvent);
+    if (window.visualViewport) {
+       window.visualViewport.addEventListener("resize", updateScale);
+    }
+    
     return () => {
       document.removeEventListener("mousemove", mouseMoveEvent);
+      if (window.visualViewport) {
+         window.visualViewport.removeEventListener("resize", updateScale);
+      }
     };
   }, []);
+
+  return ref;
 }

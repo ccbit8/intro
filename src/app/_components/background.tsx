@@ -63,14 +63,21 @@ function InteractiveBg({
 }: {
   children: React.ReactNode;
 }) {
-  // --x and --y will be updated based on mouse position
-  useMouseMove();
+  // --x and --y will be updated based on mouse position on this localized container
+  const containerRef = useMouseMove<HTMLDivElement>();
+  
   return (
     <>
-      <div className="fixed left-0 top-0 -z-50">
+      <div ref={containerRef} className="fixed left-0 top-0 -z-50">
         <div className="sticky left-0 top-0 h-screen w-screen overflow-hidden">
           <div className="bg-muted-foreground/20 absolute inset-0 z-[-1]" />
-          <div className="bg-gradient-radial from-muted-foreground/80 absolute left-[--x] top-[--y] z-[-1] h-56 w-56 -translate-x-1/2 -translate-y-1/2 rounded-full from-0% to-transparent to-90% blur-md" />
+          <div 
+            className="bg-gradient-radial from-muted-foreground/80 absolute left-0 top-0 z-[-1] h-56 w-56 rounded-full from-0% to-transparent to-90% blur-md"
+            style={{ 
+              transform: 'translate3d(calc(var(--x) - 50%), calc(var(--y) - 50%), 0)',
+              willChange: 'transform'
+            }}
+          />
           <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
             <defs>
               <pattern

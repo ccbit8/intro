@@ -1,5 +1,32 @@
+"use client";
+
+import { useEffect, useState } from 'react';
 import { ChartRadarLabelCustom } from '@/components/ui/shadcn-io/radar-chart-04';
-const RadarChart04 = () => (
-  <ChartRadarLabelCustom />
-);
+
+const RadarChart04 = () => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // Delay rendering of the heavy chart to avoid hydration reflow conflicts.
+    // Recharts (ResponsiveContainer) measures DOM immediately on mount.
+    // If this happens while next-themes is applying the global class to <html>,
+    // it triggers a full-page Forced Reflow.
+    const timer = requestAnimationFrame(() => {
+      // Double rAF ensures we process this in the frame *after* the layout effects of hydration have settled
+      requestAnimationFrame(() => {
+         setMounted(true);
+      });
+    });
+    return () => cancelAnimationFrame(timer);
+  }, []);
+
+  if (!mounted) {
+    // Return a placeholder of the same size to avoid layout shift later
+    // The chart component has 'aspect-square w-72 sm:w-80 h-auto'
+    return <div className="aspect-square w-72 sm:w-80 h-auto" />;
+  }
+
+  return <ChartRadarLabelCustom />;
+};
+
 export default RadarChart04;

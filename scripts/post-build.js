@@ -72,7 +72,27 @@ async function optimizeHtml() {
       pruneSource: false, 
       inlineFonts: true,
       preload: 'media',
-      logLevel: 'warn'
+      logLevel: 'warn',
+      // 关键修复：帮助 critters 找到 _next 路径下的物理文件
+      // 否则所有的字体预加载都会因为找不到文件而被跳过
+      readFile: (filePath) => {
+        let targetPath = filePath;
+        
+        // 处理 /_next/ 开头的虚拟路径 -> 映射到物理路径
+        if (!path.isAbsolute(filePath) && filePath.startsWith('/_next/')) {
+          targetPath = path.join(basePath, filePath.replace(/^\/_next\//, ''));
+        } 
+        // 处理相对路径 (相对于 basePath)
+        else if (!path.isAbsolute(filePath)) {
+          targetPath = path.join(basePath, filePath);
+        }
+
+        try {
+          return fs.readFileSync(targetPath);
+        } catch (e) {
+          return null; // 文件未找到，静默失败
+        }
+      }
     });
 
     const htmlFiles = findHtmlFiles(searchDir);
@@ -89,6 +109,7 @@ async function optimizeHtml() {
     }
   }
 }
+
 
 
 /**

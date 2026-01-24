@@ -27,19 +27,52 @@ export const CardContainer = ({
 }: CardContainerProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMouseEntered, setIsMouseEntered] = useState(false);
+  const isTicking = useRef(false);
+  const boundsRef = useRef<{ x: number; y: number; width: number; height: number } | null>(null);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!containerRef.current) return;
-    const { left, top, width, height } =
-      containerRef.current.getBoundingClientRect();
-    const x = (e.clientX - left - width / 2) / 25;
-    const y = (e.clientY - top - height / 2) / 25;
-    containerRef.current.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
+    if (!containerRef.current || isTicking.current) return;
+
+    // Cache event coordinates to avoid issues in rAF
+    const { pageX, pageY } = e;
+
+    isTicking.current = true;
+    requestAnimationFrame(() => {
+      // If bounds aren't cached (e.g. didn't enter via mouseenter or layout changed), fallback or just exit
+      // Ideally we rely on mouseEnter to set this, but if missing we could recalc (but that risks reflow)
+      // For now, let's assume enter always fires before move or we calc if null.
+      if (!boundsRef.current && containerRef.current) {
+         const rect = containerRef.current.getBoundingClientRect();
+         boundsRef.current = {
+            x: rect.left + window.scrollX,
+            y: rect.top + window.scrollY,
+            width: rect.width,
+            height: rect.height
+         };
+      }
+
+      if (containerRef.current && boundsRef.current) {
+        const { x: left, y: top, width, height } = boundsRef.current;
+        const x = (pageX - left - width / 2) / 25;
+        const y = (pageY - top - height / 2) / 25;
+        containerRef.current.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
+      }
+      isTicking.current = false;
+    });
   };
 
   const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
     setIsMouseEntered(true);
     if (!containerRef.current) return;
+    
+    // Cache bounds on entry to avoid layout thrashing during move
+    const rect = containerRef.current.getBoundingClientRect();
+    boundsRef.current = {
+        x: rect.left + window.scrollX,
+        y: rect.top + window.scrollY,
+        width: rect.width,
+        height: rect.height
+    };
   };
 
   const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {

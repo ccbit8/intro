@@ -162,7 +162,7 @@ async function downloadScreenshot(url) {
   // 如果文件已存在且大小合理，跳过
   if (fs.existsSync(filepath)) {
     const size = fs.statSync(filepath).size;
-    if (size > 10000) { // 超过 10KB 认为是有效文件
+    if (size > 1000) { // 超过 1KB 认为是有效文件 (因压缩后可能很小)
       console.log(`⏭️  已存在 (${(size/1024).toFixed(1)}KB): ${filename}`);
       return true;
     } else {
