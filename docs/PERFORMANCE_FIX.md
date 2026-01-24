@@ -66,13 +66,58 @@ npm run screenshots
 - `scripts/create-placeholders.js` - 生成 SVG 占位图（快速）
 - `scripts/generate-screenshots.js` - 下载真实截图（可选）
 
-### 4️⃣ 其他优化
+### 4️⃣ 避免 404 错误与 CSS 阻塞 (Follow-up Fixes)
 
-- ✅ 启用 gzip 压缩（next.config.js）
-- ✅ 优化缓存策略（Cache-Control 头）
-- ✅ 添加中间件优化（src/middleware.ts）
-- ✅ 服务器连接管理（server.js）
-- ✅ 延迟加载 ChatDialog（page.tsx）
+#### CSS 阻塞渲染
+- **问题**: Next.js 默认 CSS 加载在 `<head>` 底部，导致 FCP（首次内容绘制）延迟。
+- **解决**: 使用 `critters` 在构建后内联关键 CSS。
+- **文件**: `scripts/post-build.js`
+
+#### 404 错误 (styles.css, script.js)
+- **问题**: 发现服务器日志中有大量 `styles.css`, `script.js` 等不存在文件的 404 请求。
+- **原因**: 
+  1. `src/middleware.ts` 手动添加了错误的 `Link` 预加载头。
+  2. `layout.tsx` 中手动添加了与 `next/font` 冲突的字体预加载。
+- **解决**: 移除了这些手动添加的错误代码，由 Next.js 自动管理资源链接。
+
+### 5️⃣ LCP (Largest Contentful Paint) 深度优化
+
+**问题**: 
+Lighthouse 提示 "LCP request discovery" 和 "Lazy load not applied"。首屏图片被默认懒加载（loading="lazy"），导致 LCP 指标被延迟。
+
+**解决方案**:
+
+1.  **有条件的高优先级加载**:
+    - 修改 `Card` 组件，增加 `priority` 属性。
+    - 当 `priority=true` 时，设置图片 `loading="eager"` 和 HTML 属性 `fetchPriority="high"`。
+    
+    ```tsx
+    // src/app/_components/card.tsx
+    <img 
+      loading={priority ? "eager" : "lazy"}
+      {...(priority ? { fetchPriority: "high" } : {})}
+    />
+    ```
+
+2.  **限制高优先级数量**:
+    - 在 `src/app/page.tsx` 中，只将前 2 个项目设置为高优先级。
+    - 之前的尝试（前 8 个）导致带宽竞争，反而拖慢了 LCP。
+    
+    ```tsx
+    // src/app/page.tsx
+    projects.map((project, index) => (
+      <Card key={project.name} project={project} priority={index < 2} />
+    ))
+    ```
+
+3.  **预加载关键资源**:
+    - 在 HTML `<head>` 中显式预加载前两张图片，确保浏览器尽快发现这些资源。
+    
+    ```tsx
+    // src/app/page.tsx
+    <link rel="preload" as="image" href="/images/preview/github-com.png" fetchPriority="high" />
+    <link rel="preload" as="image" href="/images/preview/llcourse.png" fetchPriority="high" />
+    ```
 
 ---
 

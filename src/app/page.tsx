@@ -22,6 +22,10 @@ export const revalidate = 3600 // 每小时重新生成一次
 export default function Home() {
   return (
     <main className="flex min-h-screen relative flex-col items-center justify-between p-2 sm:p-8">
+      {/* Preload critical images for LCP optimization */}
+      <link rel="preload" as="image" href="/images/preview/github-com.png" fetchPriority="high" />
+      <link rel="preload" as="image" href="/images/preview/llcourse.png" fetchPriority="high" />
+      
       <div className="sm:sticky top-0 flex w-full max-w-[1280px] mx-auto">
         <div className="sm:absolute sm:top-2 sm:-right-12 gap-2 p-1 flex-1 flex sm:flex-col justify-center items-center">
           <ModeToggle />
@@ -76,8 +80,8 @@ export default function Home() {
             <h3 className="text-xl font-cal">Projects</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
               {
-                projects.map((project) => (
-                  <Card key={project.name} project={project} />
+                projects.map((project, index) => (
+                  <Card key={project.name} project={project} priority={index < 2} />
                 ))
               }
             </div>
@@ -86,8 +90,8 @@ export default function Home() {
             <h3 className="text-xl font-cal">Notes</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
               {
-                notes.map((note) => (
-                  <Card key={note.name} project={note} />
+                notes.map((note, index) => (
+                  <Card key={note.name} project={note} priority={false} />
                 ))
               }
             </div>
@@ -96,8 +100,8 @@ export default function Home() {
             <h3 className="text-xl font-cal">Tools</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
               {
-                tools.map((tool) => (
-                  <Card key={tool.name} project={tool} />
+                tools.map((tool, index) => (
+                  <Card key={tool.name} project={tool} priority={false} />
                 ))
               }
             </div>

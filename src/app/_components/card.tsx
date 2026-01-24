@@ -4,7 +4,7 @@ import Link from "next/link"
 
 // 更紧凑的小卡片：减少内边距、显示页面预览图
 export interface BasicItem { name: string; link: string; image: string; desc?: string }
-export default function CardProject({ project }: { project?: BasicItem }) {
+export default function CardProject({ project, priority = false }: { project?: BasicItem, priority?: boolean }) {
   // 判断是否为站内详情页（如 /miniapp/xxx）
   // 判断是否为外链：以 http:// 或 https:// 开头即视为外部链接，否则认为是站内路由
   const isExternal = /^https?:\/\//i.test(project?.link || "");
@@ -24,11 +24,13 @@ export default function CardProject({ project }: { project?: BasicItem }) {
                 <img 
                   src={project.image} 
                   alt={`${project.name} preview`}
-                  loading="lazy"
+                  loading={priority ? "eager" : "lazy"}
+                  decoding="async"
                   className="w-full h-full object-cover hover:scale-105 transition-transform"
                   onError={(e) => {
                     e.currentTarget.src = `https://via.placeholder.com/400x225/e2e8f0/64748b?text=${project.name}`
                   }}
+                  {...(priority ? { fetchPriority: "high" } : {})}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[10px] text-muted-foreground">
@@ -47,11 +49,13 @@ export default function CardProject({ project }: { project?: BasicItem }) {
                 <img 
                   src={project.image} 
                   alt={`${project.name} preview`}
-                  loading="lazy"
+                  loading={priority ? "eager" : "lazy"}
+                  decoding="async"
                   className="w-full h-full object-cover hover:scale-105 transition-transform"
                   onError={(e) => {
                     e.currentTarget.src = `https://via.placeholder.com/400x225/e2e8f0/64748b?text=${project.name}`
                   }}
+                  {...(priority ? { fetchPriority: "high" } : {})}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[10px] text-muted-foreground">
