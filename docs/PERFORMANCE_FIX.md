@@ -134,6 +134,31 @@ Lighthouse 警告 "Improve image delivery"，"Est savings of 2,851 KiB"。
 - 典型优化: `fst-fujica-com-cn.png` 从 67.3KB 进一步降至 18.2KB。
 - 相比原始全尺寸截图，体积通常减少了 **95%** 以上。
 
+### 7️⃣ 修复强制重排 (Forced Reflow)
+
+**问题**:
+Lighthouse 警告 "Forced Reflow"，指出 JS 在样式失效后查询了几何属性，导致浏览器被迫同步计算布局。
+经排查，`src/hooks/use-mouse-move.tsx` 钩子由于监听 `mousemove` 事件并频繁修改 `document.body` 的 CSS 变量 (`--x`, `--y`)，同时读取 `window.visualViewport.scale`，导致了由输入驱动的布局抖动（Layout Thrashing）。
+
+**解决方案**:
+使用 `requestAnimationFrame` (rAF) 对鼠标移动事件进行节流（Throttling）。
+- 将 DOM 读取和写入操作放入 `rAF` 回调中，确保在每一帧的特定时刻统一执行。
+- 引入 `ticking` 标志位，防止在同一帧内多次注册回调。
+
+```typescript
+// src/hooks/use-mouse-move.tsx
+let ticking = false;
+function mouseMoveEvent(e: MouseEvent) {
+  if (!ticking) {
+    window.requestAnimationFrame(() => {
+      // Read & Write happens here
+      ticking = false;
+    });
+    ticking = true;
+  }
+}
+```
+
 ---
 
 ## 📊 优化效果
