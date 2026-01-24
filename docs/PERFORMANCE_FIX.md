@@ -315,6 +315,84 @@ const critters = new Critters({
 
 ---
 
+### 5️⃣ 减负行动：分割巨型 JS 块 (Code Splitting)
+
+#### 📦 嫌疑人 X (The Bloated Chunk)
+**危机**: Lighthouse 指出 "Reduce unused JavaScript"，并列出了一个巨大的 Chunk `832-7a8b...js`，体积高达 **432.5 KiB**。
+
+#### 🕵️‍♂️ 侦察手段 (Investigation Methods)
+Lighthouse 只给了我们一个冷冰冰的压缩文件名。为了找出这个 Chunk 背后隐藏的真实代码，我们使用了 Chrome DevTools 的**覆盖率 (Coverage)** 工具进行精准定位：
+
+1.  **启动覆盖率检测**:
+    - 打开 Chrome 开发者工具 (F12)。
+    - 按下 `Cmd/Ctrl + Shift + P` 打开命令菜单，输入 "Coverage" 并选择 **"Show Coverage"**。
+    - 底部会出现一个新的 Coverage 面板。
+
+2.  **录制与分析**:
+    - 点击面板上的 ⏺️ **Instrument coverage and reload page** (录制并刷新) 按钮。
+    - 页面加载完成后，列表中会显示所有 JS/CSS 文件。
+    - 找到那个体积巨大的 JS 文件（通常在列表顶部），**红色条**代表“已下载但未执行”的代码，**蓝色/绿色条**代表“已执行”的代码。
+
+3.  **锁定真凶**:
+    - 双击该文件打开详情视图。
+    - 我们在红色的未使用代码块中，发现了大量 `recharts`, `d3-shape`, `d3-scale`, `PolarAngleAxis` 等关键词。
+    - **结论**: 这是一个完整的图表库，虽然我在首屏根本没看到图表，但它却被完整下载并解析了。
+
+4.  **辅助验证 (Webpack Bundle Analyzer)**:
+    - 为了再次确认，我们可以使用 `@next/bundle-analyzer` 生成可视化打包报告。
+    - **方法**: 配置 `next.config.js` 后运行 `ANALYZE=true npm run build`。
+    - **结果**: 生成的 HTML TreeMap 直观地展示了 `recharts` 及其依赖 (`d3-scale`, `d3-shape`) 占据了主包的一大块版图，与 Coverage 的发现完全一致。
+
+**分析**:
+1.  **加载逻辑**: 在 `page.tsx` 中，`IndexRadar` 组件是**静态引入**的 (`import IndexRadar from ...`)。这意味着不管用户是否滚动到页面底部的图表区域，这 432KB 的代码都会在首屏加载时阻塞主线程。
+2.  **用户体验**: 用户打开首页是为了看 Header 和简介，却被强迫下载一个为了展示技能树的重型图表引擎。
+
+**Lighthouse 警告**: `Reduce unused JavaScript` (Est savings 166 KiB)
+
+**行动 1**: **动态导入 (Dynamic Import)**
+我们将 `IndexRadar` 从静态引用改为 `next/dynamic` 动态引用，并禁用 SSR（因为图表无论如何都需要在客户端 `mount` 后渲染）。
+
+```tsx
+// 🚀 优化前：静态引入，打入主包
+// import IndexRadar from "@/app/_components/index-radar";
+
+// ✅ 优化后：动态拆分，独立 Chunk
+const IndexRadar = dynamic(() => import('@/app/_components/index-radar'), {
+  ssr: false, // 仅在客户端渲染，减少水合压力
+  loading: () => <div className="aspect-square w-72 sm:w-80 h-auto" />, // 占位防抖动
+});
+```
+
+**行动 2**: **Tree Shaking 修复** (针对问题依然存在的情况)
+即便拆分了 Chunk，我们发现体积依然偏大。通过检查 `src/components/ui/chart.tsx`，发现使用了 `import * as RechartsPrimitive` 全量引入。所有的 Recharts 图表类型被打包在了一起。
+我们将其修改为按需具名引入：
+
+```tsx
+// src/components/ui/chart.tsx
+// ❌ Before
+import * as RechartsPrimitive from "recharts"
+
+// ✅ After
+import { ResponsiveContainer, Tooltip, Legend } from "recharts"
+```
+
+**行动 3**: **交互时加载 (Load on Interaction)**
+Lighthouse 报告的另一个 75KB Chunk 是 `ChatDialog` (AI 对话框)。我们重构了加载逻辑，首屏只渲染一个纯 CSS/SVG 的触发按钮。只有当用户点击图标时，才开始下载繁重的 AI 对话代码。
+
+```tsx
+// src/components/ai/chat-lazy.tsx
+const ChatDialog = dynamic(() => import('./chat-dialog'), { ssr: false })
+// ...点击后才渲染 <ChatDialog />
+```
+
+**战果**:
+- **主包瘦身**: Recharts 的代码被剥离并按需加载。
+- **并行加载**: 浏览器可以优先执行核心交互代码。
+- **按需加载**: AI 功能完全移除出首屏依赖。
+- **Lighthouse**: "Unused JavaScript" 警告消失。
+
+---
+
 ## 📊 优化效果
 
 ### 性能指标对比

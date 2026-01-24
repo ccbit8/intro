@@ -1,17 +1,26 @@
 import React, { Suspense, lazy } from "react";
+import nextDynamic from 'next/dynamic'
 import { ModeToggle } from "@/components/theme/toggle-mode";
 import { Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LangToggle from "@/components/theme/toggle-lang";
-import IndexRadar from "@/app/_components/index-radar";
+// import IndexRadar from "@/app/_components/index-radar";
 import TechStack from "@/app/_components/tech-stack";
 import Capabilities from "@/app/_components/capabilities";
 import Card from "./_components/card";
 import { projects, notes, tools } from "@/data/site-data";
 import { Headphones } from "lucide-react";
+import LazyChat from "@/components/ai/chat-lazy";
+
+// 📉 性能优化：动态导入重型组件 (Recharts ~500KB)
+// ssr: false 确保它只在客户端渲染，且独立于主 Bundle
+const IndexRadar = nextDynamic(() => import('@/app/_components/index-radar'), {
+  ssr: false,
+  loading: () => <div className="aspect-square w-72 sm:w-80 h-auto" />,
+})
 
 // 延迟加载非关键组件
-const ChatDialog = lazy(() => import('@/components/ai/chat-dialog'))
+// const ChatDialog = lazy(() => import('@/components/ai/chat-dialog'))
 
 // const snippets = allSnippets.sort((a, b) => a.order - b.order);
 
@@ -43,9 +52,7 @@ export default function Home() {
               <Headphones />
             </a>
           </Button>
-          <Suspense fallback={<div className="w-9 h-9" />}>
-            <ChatDialog />
-          </Suspense>
+          <LazyChat />
         </div>
       </div>
       <div className="flex flex-col gap-8 w-full max-w-[1280px] relative mx-auto flex-1 p-4 border border-border backdrop-blur-[2px] rounded-lg">

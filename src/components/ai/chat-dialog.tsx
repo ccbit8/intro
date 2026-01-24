@@ -48,8 +48,12 @@ const EXAMPLE_QUESTIONS = [
   "如何联系？"
 ]
 
-export default function ChatDialog() {
-  const [open, setOpen] = useState(false)
+interface ChatDialogProps {
+  defaultOpen?: boolean
+}
+
+export default function ChatDialog({ defaultOpen = false }: ChatDialogProps) {
+  const [open, setOpen] = useState(defaultOpen)
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE])
   const [retryInfo, setRetryInfo] = useState<{messageId: string, prompt: string, lastEventId?: string} | null>(null)
   const [input, setInput] = useState('')
