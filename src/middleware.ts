@@ -26,12 +26,6 @@ export function middleware(request: NextRequest) {
   response.headers.set('X-Frame-Options', 'SAMEORIGIN')
   response.headers.set('X-XSS-Protection', '1; mode=block')
 
-  // ✅ 启用 DNS 预解析
-  response.headers.set(
-    'Link',
-    '</styles.css>; rel=preload; as=style, </script.js>; rel=preload; as=script'
-  )
-
   return response
 }
 

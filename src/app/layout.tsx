@@ -38,14 +38,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* 预加载字体 */}
-        <link
-          rel="preload"
-          href="/fonts/CalSans-SemiBold.ttf"
-          as="font"
-          type="font/ttf"
-          crossOrigin="anonymous"
-        />
       </head>
       <PlausibleProvider domain="caelus.cc">
         <body className={`${inter.className} ${myFont.variable}`}>

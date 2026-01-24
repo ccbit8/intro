@@ -12,15 +12,12 @@ const nextConfig = {
 
   // 启用 SWC 压缩和优化
   swcMinify: true,
+  
+  // ✅ 启用 gzip 和 brotli 压缩
   compress: true,
 
   // 性能优化
   productionBrowserSourceMaps: false,
-
-  // ✅ 启用 gzip 和 brotli 压缩
-  compress: true,
-  
-  // 允许外部截图服务的图片
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
@@ -113,6 +110,7 @@ const nextConfig = {
 
   // ✅ 性能相关的 experimental 特性
   experimental: {
+    // optimizeCss: true, // 启用关键 CSS 内联优化 (moved to manual post-build script)
     optimizePackageImports: ['recharts', 'lucide-react'], // 优化按需导入
   },
 }
