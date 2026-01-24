@@ -285,9 +285,33 @@ lighthouse http://localhost:3000 --view --preset=desktop
 
 ---
 
-### 8️⃣ 优化关键请求链 (Critical Request Chains)与字体预加载 (修复版)
+### 4️⃣ 优化关键请求链 (Critical Request Chains)与字体预加载 (修复版)
 
-### 9️⃣ (Removed - Integrated into Section 7)
+#### ⛓️ 关键请求链 (Critical Request Chains)
+**危机**: Lighthouse 警告 "Avoid chaining critical requests"，并指出 `162bf...ttf` 和 `e4af...woff2` 导致了 584ms 的关键路径延迟。
+**分析**:
+虽然我们内联了 Critical CSS，但浏览器必须先下载 HTML，解析 `<style>` 标签中的 `@font-face` 规则，然后才会发起字体请求。这形成了一个 `HTML -> CSS Parse -> Font Request` 的串行依赖链。
+
+**Lighthouse 警告**: `Maximum critical path latency: 584 ms`
+
+**行动**: **启用字体预加载 (Preload Fonts)**
+修改 `scripts/post-build.js`，在 `Critters` 配置中显式开启 `preloadFonts`。这会促使 Critters 在分析 CSS 时，自动将关键路径上的字体提取出来，并向 `<head>` 注入 `<link rel="preload" as="font" ...>` 标签。这使得字体请求可以与 HTML 解析并行进行，打破串行链。
+
+```javascript
+// scripts/post-build.js
+const critters = new Critters({
+  // ...
+  inlineFonts: true,
+  preloadFonts: true, // ✅ 新增：强制预加载关键字体
+  preload: 'media',
+  // ...
+});
+```
+
+#### ⚖️ 字体格式优化 (TTF vs WOFF2)
+**问题**: 观察到 `CalSans-SemiBold.ttf` 大小为 54KB，而同级的 `Inter` (woff2) 只有 47KB。TTF 格式的压缩率远不如 WOFF2。
+**建议**: 强烈建议将 `localFont` 引用的 `.ttf` 文件转换为 `.woff2` 格式。
+**预期收益**: WOFF2 通常只有 TTF 体积的 60%-80%，可进一步减少 10-20KB 的下载量。
 
 ---
 

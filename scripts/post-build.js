@@ -71,6 +71,7 @@ async function optimizeHtml() {
       compress: true,
       pruneSource: false, 
       inlineFonts: true,
+      preloadFonts: true, // ✅ 强制预加载关键字体，解决 Critical Request Chains 问题
       preload: 'media',
       logLevel: 'warn',
       // 关键修复：帮助 critters 找到 _next 路径下的物理文件
