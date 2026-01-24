@@ -30,7 +30,7 @@ export default function CardProject({ project, priority = false }: { project?: B
                   onError={(e) => {
                     e.currentTarget.src = `https://via.placeholder.com/400x225/e2e8f0/64748b?text=${project.name}`
                   }}
-                  {...(priority ? { fetchPriority: "high" } : {})}
+                  fetchPriority={priority ? "high" : "low"}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[10px] text-muted-foreground">
@@ -55,7 +55,7 @@ export default function CardProject({ project, priority = false }: { project?: B
                   onError={(e) => {
                     e.currentTarget.src = `https://via.placeholder.com/400x225/e2e8f0/64748b?text=${project.name}`
                   }}
-                  {...(priority ? { fetchPriority: "high" } : {})}
+                  fetchPriority={priority ? "high" : "low"}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[10px] text-muted-foreground">

@@ -137,6 +137,17 @@ await sharp(inputPath)
 
 **战果**: LCP 从 11s 优化至 **1.8s**。
 
+#### ⚠️ 策略调整：图表优先 (Re-evaluation: Chart First Strategy)
+**日期**: 2026-01-25
+**反馈**: 用户认为首屏核心视觉（Radar Chart）加载慢于卡片图片，体验割裂。
+**行动**:
+为了确保 JS 驱动的 Radar Chart 获得最高网络优先级，我们**回滚**了 Act 3 中的部分图片激进优化。
+1. **降级图片**: 移除首页所有图片的 `priority` 属性 (`priority={false}`)。
+2. **让路宽带**: 将所有卡片图片的 `fetchPriority` 显式设置为 `"low"`，防止它们阻塞 JS 加载。
+3. **移除预加载**: 删除 HTML Head 中的 `<link rel="preload">`。
+
+**结果**: 虽然理论 LCP 可能微降，但用户感知的“首屏交互就绪速度”提升，图表不再被图片抢占带宽。
+
 ---
 
 ### 2️⃣ 消除噪音 (404 & CSS Blocking)
@@ -559,6 +570,7 @@ Route (app)                Size     First Load JS
 1.  **Reduce unused JavaScript (未使用 JS)**
     *   *优化前*: ❌ 警告 (201 KB unused, 浪费 320ms 主线程)
     *   *优化后*: ✅ **已解决** (降至 74 KB)
+    *   *现状说明*: 剩余的 **74 KB** 是 Recharts/D3 的核心运行时依赖（属于必要代码）。原 **75 KB** 的 ChatDialog 代码已通过交互加载完全移出首屏。
     *   *手段*: Recharts 动态加载 + Tree Shaking + Lazy Chat。
 
 2.  **Improve image delivery (图片体积)**
