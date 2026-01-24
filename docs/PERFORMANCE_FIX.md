@@ -119,6 +119,21 @@ Lighthouse 提示 "LCP request discovery" 和 "Lazy load not applied"。首屏�
     <link rel="preload" as="image" href="/images/preview/llcourse.png" fetchPriority="high" />
     ```
 
+### 6️⃣ 图片体积深度压缩 (Resizing)
+
+**问题**:
+Lighthouse 警告 "Improve image delivery"，"Est savings of 2,851 KiB"。
+原因在于之前生成的截图是按照 2000px 宽的视口生成的，或者是全尺寸截图，而我们在页面上展示的卡片宽度仅约 300px - 400px。
+
+**解决方案**:
+1.  **修改压缩参数**: 将 `scripts/compress-images.js` 和 `scripts/generate-screenshots.js` 中的最大分辨率限制调至 **400px**。
+2.  **批量重新压缩**: 运行脚本对现有图片进行 inplace 压缩。
+
+**执行结果**:
+- 总共节省体积: **0.66 MB** (在之前已压缩的基础上再次节省)
+- 典型优化: `fst-fujica-com-cn.png` 从 67.3KB 进一步降至 18.2KB。
+- 相比原始全尺寸截图，体积通常减少了 **95%** 以上。
+
 ---
 
 ## 📊 优化效果

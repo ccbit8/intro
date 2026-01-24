@@ -53,9 +53,9 @@ async function compressImage(filename) {
     // 压缩图片
     let pipeline = sharp(inputPath);
     
-    // 调整分辨率（不超过 2000px）
-    if (metadata.width > 2000 || metadata.height > 2000) {
-      pipeline = pipeline.resize(2000, 2000, {
+    // 调整分辨率（不超过 400px，适配合理的卡片展示）
+    if (metadata.width > 400 || metadata.height > 400) {
+      pipeline = pipeline.resize(400, 400, {
         fit: 'inside',
         withoutEnlargement: true
       });

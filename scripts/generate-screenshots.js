@@ -68,8 +68,8 @@ async function compressImage(filePath) {
 
     // 压缩 PNG
     let pipeline = sharp(filePath);
-    if (metadata.width > 2000 || metadata.height > 2000) {
-      pipeline = pipeline.resize(2000, 2000, {
+    if (metadata.width > 400 || metadata.height > 400) {
+      pipeline = pipeline.resize(400, 400, {
         fit: 'inside',
         withoutEnlargement: true
       });
