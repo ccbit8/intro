@@ -8,6 +8,7 @@ import LangToggle from "@/components/theme/toggle-lang";
 import TechStack from "@/app/_components/tech-stack";
 import Capabilities from "@/app/_components/capabilities";
 import Card from "./_components/card";
+import { LoadingProvider } from "./_components/loading-context";
 import { projects, notes, tools } from "@/data/site-data";
 import { Headphones } from "lucide-react";
 import LazyChat from "@/components/ai/chat-lazy";
@@ -64,6 +65,7 @@ export default function Home() {
           </div>
         </div>
         <div className="flex-1 min-h-full flex flex-col">
+          <LoadingProvider>
           <div className="grid grid-cols-1 md:grid-cols-2 pb-4">
             <div className="grid pb-4 md:pb-0 md:pr-4">
               <div className="flex flex-col gap-4 pb-4 border-b border-border">
@@ -90,6 +92,7 @@ export default function Home() {
               }
             </div>
           </div>
+          </LoadingProvider>
           <div className="pt-4 border-t border-border flex flex-col gap-3">
             <h3 className="text-xl font-cal">Notes</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
@@ -130,7 +133,6 @@ export default function Home() {
               ))}
             </Accordion>
           </div> */}
-        </div>
         <div>
           <p className="text-center text-muted-foreground text-sm mb-1">
             Powered by{" "}
@@ -151,6 +153,7 @@ export default function Home() {
             </a>
           </p>
         </div>
+      </div>
       </div>
     </main>
   );

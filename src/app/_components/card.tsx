@@ -1,10 +1,12 @@
 "use client"
 import { Card, CardContent, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
+import { useLoadingContext } from "./loading-context"
 
 // 更紧凑的小卡片：减少内边距、显示页面预览图
 export interface BasicItem { name: string; link: string; image: string; desc?: string }
 export default function CardProject({ project, priority = false }: { project?: BasicItem, priority?: boolean }) {
+  const { isChartReady } = useLoadingContext()
   // 判断是否为站内详情页（如 /miniapp/xxx）
   // 判断是否为外链：以 http:// 或 https:// 开头即视为外部链接，否则认为是站内路由
   const isExternal = /^https?:\/\//i.test(project?.link || "");
@@ -22,7 +24,7 @@ export default function CardProject({ project, priority = false }: { project?: B
             <div className="aspect-video rounded-sm bg-muted mb-1.5 overflow-hidden relative">
               {project?.image ? (
                 <img 
-                  src={project.image} 
+                  src={isChartReady ? project.image : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"} 
                   alt={`${project.name} preview`}
                   loading={priority ? "eager" : "lazy"}
                   decoding="async"
@@ -47,7 +49,7 @@ export default function CardProject({ project, priority = false }: { project?: B
             <div className="aspect-video rounded-sm bg-muted mb-1.5 overflow-hidden relative">
               {project?.image ? (
                 <img 
-                  src={project.image} 
+                  src={isChartReady ? project.image : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"} 
                   alt={`${project.name} preview`}
                   loading={priority ? "eager" : "lazy"}
                   decoding="async"

@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { ChartRadarLabelCustom } from '@/components/ui/shadcn-io/radar-chart-04';
+import { useLoadingContext } from './loading-context';
 
 const RadarChart04 = () => {
   const [mounted, setMounted] = useState(false);
+  const { setChartReady } = useLoadingContext();
 
   useEffect(() => {
     // Delay rendering of the heavy chart to avoid hydration reflow conflicts.
@@ -15,10 +17,11 @@ const RadarChart04 = () => {
       // Double rAF ensures we process this in the frame *after* the layout effects of hydration have settled
       requestAnimationFrame(() => {
          setMounted(true);
+         setChartReady(true);
       });
     });
     return () => cancelAnimationFrame(timer);
-  }, []);
+  }, [setChartReady]);
 
   if (!mounted) {
     // Return a placeholder of the same size to avoid layout shift later
