@@ -1,15 +1,15 @@
 "use client"
 import { Card, CardContent, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { useLoadingContext } from "./loading-context"
+import Image from "next/image"
 
 // 更紧凑的小卡片：减少内边距、显示页面预览图
 export interface BasicItem { name: string; link: string; image: string; desc?: string }
 export default function CardProject({ project, priority = false }: { project?: BasicItem, priority?: boolean }) {
-  const { isChartReady } = useLoadingContext()
   // 判断是否为站内详情页（如 /miniapp/xxx）
   // 判断是否为外链：以 http:// 或 https:// 开头即视为外部链接，否则认为是站内路由
   const isExternal = /^https?:\/\//i.test(project?.link || "");
+  
   return (
     <div className="w-full p-2">
       <Card className="w-full shadow-sm hover:shadow transition-shadow border-border/60 overflow-hidden">
@@ -23,16 +23,13 @@ export default function CardProject({ project, priority = false }: { project?: B
             >
             <div className="aspect-video rounded-sm bg-muted mb-1.5 overflow-hidden relative">
               {project?.image ? (
-                <img 
-                  src={isChartReady ? project.image : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"} 
+                <Image 
+                  src={project.image}
                   alt={`${project.name} preview`}
-                  loading={priority ? "eager" : "lazy"}
-                  decoding="async"
+                  fill
+                  priority={priority}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   className="w-full h-full object-cover hover:scale-105 transition-transform"
-                  onError={(e) => {
-                    e.currentTarget.src = `https://via.placeholder.com/400x225/e2e8f0/64748b?text=${project.name}`
-                  }}
-                  fetchPriority={priority ? "high" : "low"}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[10px] text-muted-foreground">
@@ -48,16 +45,13 @@ export default function CardProject({ project, priority = false }: { project?: B
             <Link href={project?.link || "#"} className="block">
             <div className="aspect-video rounded-sm bg-muted mb-1.5 overflow-hidden relative">
               {project?.image ? (
-                <img 
-                  src={isChartReady ? project.image : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"} 
+                <Image 
+                  src={project.image}
                   alt={`${project.name} preview`}
-                  loading={priority ? "eager" : "lazy"}
-                  decoding="async"
+                  fill
+                  priority={priority}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   className="w-full h-full object-cover hover:scale-105 transition-transform"
-                  onError={(e) => {
-                    e.currentTarget.src = `https://via.placeholder.com/400x225/e2e8f0/64748b?text=${project.name}`
-                  }}
-                  fetchPriority={priority ? "high" : "low"}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[10px] text-muted-foreground">
