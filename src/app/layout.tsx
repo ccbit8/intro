@@ -4,7 +4,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Background from "./_components/background";
 import localFont from "next/font/local";
-import PlausibleProvider from "next-plausible";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -39,14 +38,14 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
       </head>
-      <PlausibleProvider domain="caelus.cc">
+      
         <body className={`${inter.className} ${myFont.variable}`}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <Background>{children}</Background>
             <Toaster />
           </ThemeProvider>
         </body>
-      </PlausibleProvider>
+      
     </html>
   );
 }

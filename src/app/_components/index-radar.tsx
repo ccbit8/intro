@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { ChartRadarLabelCustom } from '@/components/ui/shadcn-io/radar-chart-04';
 import { useLoadingContext } from './loading-context';
+import { RadarSkeleton } from './radar-skeleton';
 
 const RadarChart04 = () => {
   const [mounted, setMounted] = useState(false);
@@ -26,7 +27,7 @@ const RadarChart04 = () => {
   if (!mounted) {
     // Return a placeholder of the same size to avoid layout shift later
     // The chart component has 'aspect-square w-72 sm:w-80 h-auto'
-    return <div className="aspect-square w-72 sm:w-80 h-auto" />;
+    return <RadarSkeleton />;
   }
 
   return <ChartRadarLabelCustom />;

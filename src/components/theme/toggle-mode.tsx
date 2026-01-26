@@ -12,11 +12,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Laptop, Moon, Sun } from "lucide-react";
 
-export function ModeToggle() {
+export function ModeToggle({ defaultOpen }: { defaultOpen?: boolean }) {
   const { setTheme } = useTheme();
 
   return (
-    <DropdownMenu>
+    <DropdownMenu defaultOpen={defaultOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="w-9 px-0">
           <Sun className="rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />

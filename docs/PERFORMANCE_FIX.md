@@ -257,6 +257,33 @@ Next.js 在运行时自动生成：
 
 **结果**: 虽然理论 LCP 可能微降，但用户感知的“首屏交互就绪速度”提升，图表不再被图片抢占带宽。
 
+#### 🛡️ 终极手段：逻辑阻断 (Strict Logic Blocking)
+**日期**: 2026-01-25
+**背景**: 即使设置了 `fetchPriority="low"`，浏览器在 LCP 算法驱动下，仍然可能优先下载视窗内的图片，导致图表脚本带宽受挤压。
+**行动**: 实施代码级强制阻塞。
+1. **指挥中心**: 引入 `LoadingContext` 状态管理。
+2. **信号机制**: `IndexRadar` 组件在渲染完第一帧（`mounted`）后发出 `isChartReady` 信号。
+3. **视觉欺骗**: `Card` 组件默认渲染 1x1 透明像素 (`data:image/gif...`)。只有收到 `isChartReady` 信号后，才将 `src` 替换为真实 URL。
+
+**效果**: 实现了绝对的加载顺序控制：**HTML -> 图表 JS (独享带宽) -> 图表渲染 -> 图片开始下载**。
+
+### 🔄 视觉稳定性与依赖清理 (Visual Stability & Cleanup)
+
+#### 1. TechStack 秒开优化
+**问题**: 顶部 `TechStack` 组件在页面加载时会短暂留白，导致视觉跳变。
+**原因**: 组件内部包含了一个基于 JS `useEffect` 的 `fadeUp` 动画，导致 HTML 虽然存在，但在 JS 执行前被 `opacity: 0` 隐藏。
+**修复**: 移除了淡入动画，改为纯静态渲染。HTML 到达即显示。
+
+#### 2. 移除 Plausible
+**行动**: 移除了 `next-plausible` 依赖，减少了外部脚本请求，进一步净化网络环境。
+
+#### 3. 雷达图骨架屏 (Radar Chart Skeleton)
+**问题**: 在图表 JS 下载和水合期间，图表区域为空白，导致视觉体验中断，且之前的空白占位可能导致 CLS 风险。
+**优化**: 创建了一个轻量级纯 SVG 组件 `RadarSkeleton.tsx`。
+- **几何拟合**: 手动计算 SVG 坐标，完美复刻 Recharts 的 5 层六边形网格布局（半径步进 18/36/54/72/90）。
+- **无缝衔接**: 在 `next/dynamic` 的 `loading` 状态和组件 `mounted` 之前的间隙全程占位，实现从“骨架”到“真图”的平滑过渡。
+- **零成本**: 纯 SVG 代码嵌入，体积 < 1KB，无需额外网络请求，HTML 解析即显示。
+
 ---
 
 ### 2️⃣ 消除噪音 (404 & CSS Blocking)
@@ -516,13 +543,178 @@ import { ResponsiveContainer, Tooltip, Legend } from "recharts"
 ```
 
 **行动 3**: **交互时加载 (Load on Interaction)**
-Lighthouse 报告的另一个 75KB Chunk 是 `ChatDialog` (AI 对话框)。我们重构了加载逻辑，首屏只渲染一个纯 CSS/SVG 的触发按钮。只有当用户点击图标时，才开始下载繁重的 AI 对话代码。
+
+这是顶部功能面板的两个交互组件的优化故事。
+
+**案例 1: AI 对话框 (ChatDialog)**
+Lighthouse 报告的一个 75KB Chunk 是 `ChatDialog` (AI 对话框)。我们重构了加载逻辑，首屏只渲染一个纯 CSS/SVG 的触发按钮。只有当用户点击图标时，才开始下载繁重的 AI 对话代码。
 
 ```tsx
 // src/components/ai/chat-lazy.tsx
 const ChatDialog = dynamic(() => import('./chat-dialog'), { ssr: false })
 // ...点击后才渲染 <ChatDialog />
 ```
+
+**案例 2: 主题切换器 (ModeToggle)**
+在 Coverage 分析中，我们发现 `@radix-ui/react-dropdown-menu` 及其依赖体积高达 **300+ KB**，但这个组件只在用户点击主题按钮时才需要。我们采用了与 ChatDialog 相同的延迟加载策略。
+
+**挑战**: 延迟加载后，用户反馈"需要点两次才弹出菜单"——第一次点击加载组件，第二次点击才触发菜单。
+
+**解决方案**: **声明式状态控制 (Declarative State Control)**
+通过查阅 Radix UI 文档，发现 `DropdownMenu` 本身支持 `defaultOpen` 属性。我们不需要模拟点击事件，而是**告诉组件加载完就打开**。
+
+```tsx
+// ✅ 解决方案 3.1: 支持声明式控制 (src/components/theme/toggle-mode.tsx)
+export function ModeToggle({ defaultOpen }: { defaultOpen?: boolean }) {
+  return (
+    <DropdownMenu defaultOpen={defaultOpen}>
+      {/* ...菜单内容... */}
+    </DropdownMenu>
+  );
+}
+
+// ✅ 解决方案 3.2: 延迟加载封装 (src/components/theme/mode-toggle-lazy.tsx)
+export default function ModeToggleLazy() {
+  const [Loaded, setLoaded] = useState<React.ComponentType | null>(null);
+  const [shouldOpen, setShouldOpen] = useState(false);
+
+  const handleClick = async () => {
+    if (Loaded) return;
+    setShouldOpen(true);  // 标记"需要打开"
+    const mod = await import("./mode-toggle.client");
+    setLoaded(() => mod.default as React.ComponentType);
+  };
+
+  if (Loaded) {
+    const Cmp = Loaded as React.ComponentType<{ defaultOpen?: boolean }>;
+    return <Cmp defaultOpen={shouldOpen} />;  // 传递初始状态
+  }
+
+  // 占位按钮：复刻真实样式
+  return (
+    <Button variant="ghost" size="sm" className="w-9 px-0" onClick={handleClick}>
+      <Sun className="rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+      <Moon className="absolute rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+    </Button>
+  );
+}
+```
+
+**原理**: 点击 → 设置 `shouldOpen=true` + 异步加载 → 组件挂载时自动打开（通过 `defaultOpen` 属性）→ 用户体验上是一次点击。
+
+**附加优化**: **视觉一致性 (Visual Consistency)**
+统一顶部操作栏的图标尺寸和按钮宽度：
+
+```tsx
+// ✅ 附加优化 3.3: 统一图标尺寸
+<Github className="h-[1.2rem] w-[1.2rem]" />
+<Headphones className="h-[1.2rem] w-[1.2rem]" />
+<Languages className="h-[1.2rem] w-[1.2rem]" />
+// 所有按钮统一为 w-9
+```
+
+#### 📦 提炼共性：通用延迟加载组件 (Generic LazyInteraction)
+
+**反思**: 在完成 `ChatDialog` 和 `ModeToggle` 的延迟加载后，我们发现两者的代码模式高度相似：
+- 都需要 `useState` 管理加载状态
+- 都需要 `handleClick` 触发异步加载
+- 都需要条件渲染占位 UI 和真实组件
+- 都需要传递 `defaultOpen` 等 props
+
+这是典型的**代码重复**信号，违反了 DRY (Don't Repeat Yourself) 原则。
+
+**行动**: 提炼通用组件 `LazyInteraction`
+
+```tsx
+// ✅ 解决方案 3.4: 通用延迟加载组件 (src/components/lazy-interaction.tsx)
+// 默认的加载状态 UI
+const DefaultLoading = () => (
+  <div className="inline-flex items-center justify-center w-9 h-9">
+    <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+  </div>
+)
+
+interface LazyInteractionProps<T = any> {
+  /** 动态导入函数 */
+  loader: () => Promise<{ default: ComponentType<T> }>
+  /** 占位 UI（接收 handleClick 触发加载） */
+  fallback: (handleClick: () => void) => React.ReactNode
+  /** 加载中 UI（可选，默认显示 spinner，传 null 禁用） */
+  loading?: (() => React.ReactNode) | null
+  /** 传递给目标组件的 props */
+  componentProps?: T
+  /** 是否禁用 SSR（默认 false） */
+  ssr?: boolean
+}
+
+export default function LazyInteraction<T>({ 
+  loader, 
+  fallback, 
+  loading = DefaultLoading,  // 默认提供 spinner
+  componentProps 
+}: LazyInteractionProps<T>) {
+  const [shouldLoad, setShouldLoad] = useState(false)
+  const [Component, setComponent] = useState<ComponentType<T> | null>(null)
+
+  const handleClick = async () => {
+    if (shouldLoad) return
+    setShouldLoad(true)
+    const mod = await loader()
+    setComponent(() => mod.default)
+  }
+
+  if (!shouldLoad) return <>{fallback(handleClick)}</>
+  if (!Component && loading) return <>{loading()}</>  // 显示 loading
+  if (Component) return <Component {...(componentProps as T)} />
+  
+  return <>{fallback(handleClick)}</>
+}
+```
+
+> 💡 **知识扩展**：这种基于 `import()` 的动态加载方案并非一蹴而就。想了解从 `<script>` 标签到 RequireJS，再到 Webpack 和现代 ES2020 的完整演进史，请阅读文档：[🕰️ 代码分割演进史：从 Script 到 import()](./DYNAMIC_IMPORT_HISTORY.md)
+
+**重构应用**:
+
+```tsx
+// ✅ 重构后的 ChatDialog (src/components/ai/chat-lazy.tsx)
+// 使用默认 loading，无需自定义
+export default function LazyChat() {
+  return (
+    <LazyInteraction
+      loader={() => import('./chat-dialog')}
+      fallback={(handleClick) => (
+        <Button onClick={handleClick}>
+          <Bot className="h-[1.2rem] w-[1.2rem]" />
+        </Button>
+      )}
+      componentProps={{ defaultOpen: true }}
+    />
+  )
+}
+
+// ✅ 重构后的 ModeToggle (src/components/theme/mode-toggle-lazy.tsx)
+export default function ModeToggleLazy() {
+  return (
+    <LazyInteraction
+      loader={() => import("./toggle-mode").then(mod => ({ default: mod.ModeToggle }))}
+      fallback={(handleClick) => (
+        <Button onClick={handleClick}>
+          <Sun className="rotate-0 scale-100 dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute rotate-90 scale-0 dark:rotate-0 dark:scale-100" />
+        </Button>
+      )}
+      componentProps={{ defaultOpen: true }}
+    />
+  )
+}
+```
+
+**收益**:
+- ✅ 代码量减少 **23%** (从 72 行减少到 56 行)
+- ✅ 消除重复逻辑，统一延迟加载模式
+- ✅ 类型安全：完整的 TypeScript 泛型支持
+- ✅ 默认 loading：开箱即用的加载状态，也支持自定义
+- ✅ 可扩展：未来任何交互触发的延迟加载都可复用
 
 **战果**:
 - **主包瘦身**: Recharts 的代码被剥离并按需加载。

@@ -10,8 +10,8 @@ export default function LangToggle() {
   };
   return (
     <div className="flex flex-col items-center gap-1">
-      <Button variant="ghost" size="sm" className="w-10 px-0" onClick={handleLangToggle}>
-        <Languages />
+      <Button variant="ghost" size="sm" className="w-9 px-0" onClick={handleLangToggle}>
+        <Languages className="h-[1.2rem] w-[1.2rem]" />
       </Button>
       {/* <span className="text-xs text-muted-foreground">{lang === 'en' ? 'English' : '中文'}</span> */}
     </div>
