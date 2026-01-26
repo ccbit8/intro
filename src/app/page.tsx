@@ -1,6 +1,5 @@
 import React, { Suspense, lazy } from "react";
-import nextDynamic from 'next/dynamic'
-import { ModeToggle } from "@/components/theme/toggle-mode";
+import ModeToggleDefer from "@/components/theme/mode-toggle.defer";
 import { Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LangToggle from "@/components/theme/toggle-lang";
@@ -16,7 +15,7 @@ import LazyChat from "@/components/ai/chat-lazy";
 // 📉 性能优化：动态导入重型组件 (Recharts ~500KB)
 // ssr: false 确保它只在客户端渲染，且独立于主 Bundle
 // loading 占位符使用骨架屏样式，避免首屏空白
-const IndexRadar = nextDynamic(() => import('@/app/_components/index-radar'), {
+const IndexRadar = nextDynamic(() => import(/* webpackChunkName: "index-radar" */ '@/app/_components/index-radar'), {
   ssr: false,
   loading: () => (
     <div className="aspect-square w-72 sm:w-80 h-auto bg-muted rounded-lg animate-pulse flex items-center justify-center">
@@ -40,7 +39,7 @@ export default function Home() {
       
       <div className="sm:sticky top-0 flex w-full max-w-[1280px] mx-auto">
         <div className="sm:absolute sm:top-2 sm:-right-12 gap-2 p-1 flex-1 flex sm:flex-col justify-center items-center">
-          <ModeToggle />
+          <ModeToggleDefer />
           <LangToggle />
           <Button variant="ghost" size="sm" className="w-9 px-0" asChild>
             <a

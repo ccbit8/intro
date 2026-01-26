@@ -125,6 +125,18 @@ const nextConfig = {
     // optimizeCss: true, // 启用关键 CSS 内联优化 (moved to manual post-build script)
     optimizePackageImports: ['recharts', 'lucide-react'], // 优化按需导入
   },
+
+  // 为了便于分析，给 Webpack 的 chunk 和 module 使用可读名称
+  webpack: (config, { isServer }) => {
+    // 仅影响客户端构建的输出命名
+    if (!isServer) {
+      config.optimization = config.optimization || {}
+      config.optimization.chunkIds = 'named'
+      config.optimization.moduleIds = 'named'
+      // 保留 Next.js 默认的 chunkFilename，避免与内置路径约定冲突
+    }
+    return config
+  },
 }
 
 module.exports = withBundleAnalyzer(cl.withContentlayer(nextConfig))
