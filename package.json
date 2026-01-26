@@ -27,7 +27,8 @@
     "screenshots": "node scripts/generate-screenshots.js",
     "placeholders": "node scripts/create-placeholders.js",
     "compress": "node scripts/compress-images.js",
-    "compress:screenshots": "npm run screenshots && npm run compress"
+    "compress:screenshots": "npm run screenshots && npm run compress",
+    "analyze": "cross-env ANALYZE=true npm run build"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
@@ -79,12 +80,14 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^16.1.4",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/react-syntax-highlighter": "^15.5.13",
     "autoprefixer": "^10",
     "critters": "^0.0.25",
+    "cross-env": "^10.1.0",
     "eslint": "^8",
     "eslint-config-next": "^13",
     "postcss": "^8",

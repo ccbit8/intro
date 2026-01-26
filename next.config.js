@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const cl = require('next-contentlayer')
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+})
 
 const nextConfig = {
   eslint: {
@@ -19,7 +22,13 @@ const nextConfig = {
   // 性能优化
   productionBrowserSourceMaps: false,
   images: {
+    // ✅ 优先使用现代高效格式（AVIF 比 PNG 小 60-70%，WebP 小 30-40%）
     formats: ['image/avif', 'image/webp'],
+    // ✅ 自动生成的图片尺寸（用于响应式设计）
+    // 这会让 Next.js 在构建时为每个图片生成不同尺寸的版本
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // ✅ 允许外部图片源（需要显式列出安全的域名）
     remotePatterns: [
       {
         protocol: 'https',
@@ -42,6 +51,9 @@ const nextConfig = {
         hostname: 'api.apiflash.com',
       },
     ],
+    // ✅ 默认图片质量（0-100，默认 75 已经很好）
+    // 75 是推荐值：可感知损失最小，文件大小下降明显
+    // 生产环境不建议改
   },
 
   async headers() {
@@ -115,4 +127,4 @@ const nextConfig = {
   },
 }
 
-module.exports = cl.withContentlayer(nextConfig)
+module.exports = withBundleAnalyzer(cl.withContentlayer(nextConfig))
