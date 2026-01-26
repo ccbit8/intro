@@ -28,6 +28,7 @@ export default function CardProject({ project, priority = false }: { project?: B
                   alt={`${project.name} preview`}
                   fill
                   priority={priority}
+                  loading={priority ? "eager" : "lazy"}
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   className="w-full h-full object-cover hover:scale-105 transition-transform"
                 />
@@ -50,6 +51,7 @@ export default function CardProject({ project, priority = false }: { project?: B
                   alt={`${project.name} preview`}
                   fill
                   priority={priority}
+                  loading={priority ? "eager" : "lazy"}
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   className="w-full h-full object-cover hover:scale-105 transition-transform"
                 />
