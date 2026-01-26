@@ -82,6 +82,31 @@ function App() {
 - ✅ **Loading 处理**: 声明式地处理加载状态。
 - ❌ **局限性**: 只能用于**组件**渲染时，无法在普通点击事件或逻辑中预加载。
 
+### 🤔 问：React.lazy 能实现"点击加载"吗？
+**答**：可以，但需要配合 State。
+
+```tsx
+// React.lazy 的点击加载模式
+const LazyComp = React.lazy(() => import('./comp'))
+
+function App() {
+  const [show, setShow] = useState(false) // 1. 需要状态控制
+  return (
+    <>
+      <button onClick={() => setShow(true)}>Load</button> // 2. 点击触发重渲染
+      {show && (
+        <Suspense fallback="..."> // 3. 渲染引发下载，必须包裹 Suspense
+          <LazyComp />
+        </Suspense>
+      )}
+    </>
+  )
+}
+```
+**对比我们的 `LazyInteraction` 方案**：
+*   `React.lazy` 模式下，点击导致状态变更，触发 Re-render，然后才开始网络请求。
+*   我们的 `import()` 模式下，点击直接触发网络请求，下载完再 Re-render。这种**命令式**控制在处理按钮 loading 动画或预加载（Preload）时更灵活，不会因为 Suspense 边界导致布局跳动。
+
 ## 6️⃣ 现代方案 (2020+): ES2020 原生 `import()`
 ECMAScript 2020 标准正式引入了动态导入语法。这也是我们项目中 `LazyInteraction` 核心使用的方案。
 

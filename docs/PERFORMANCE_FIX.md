@@ -613,6 +613,45 @@ export default function ModeToggleLazy() {
 // 所有按钮统一为 w-9
 ```
 
+#### 第五阶段：斩断乱麻 (Act 5: Webpack SplitChunks)
+**危机**: 解决了一圈问题，发现 `npm run analyze` 报告中依然存在一个莫名其妙的巨大 JS 文件 (492KB)，名字叫 `vendors-...bot.js`。
+**调查**:
+1. 它是 `lucide-react` 图标库吗？不是，`bot.js` 只有 0.5KB。
+2. 为什么它这么大？Webpack 把 **Recharts** (图表库) 和 **Lucide** (图标库) 错误地打包在了一起。
+3. 为什么叫 `bot.js`？这只是 Webpack 的命名潜规则：用包里第一个模块的名字给整个 Chunk 命名。无辜的 `Bot` 图标背了 500KB 的锅。
+
+**Lighthouse 警告**: `Reduce unused JavaScript`
+**行动**:
+在 `next.config.js` 中强制拆分 Webpack 缓存组。
+
+```javascript
+// ✅ 解决方案 5.1: 强制拆分 Vendor (next.config.js)
+cacheGroups: {
+  recharts: {
+    name: 'recharts',
+    test: /[\\/]node_modules[\\/]recharts[\\/]/,
+    chunks: 'all',
+    priority: 20,
+    enforce: true // 强制拆分，不许合并
+  },
+  lucide: {
+    name: 'lucide-react', // 给个正经名字
+    test: /[\\/]node_modules[\\/]lucide-react[\\/]/,
+    chunks: 'all',
+    priority: 20,
+    enforce: true
+  }
+}
+```
+
+**战果**: 
+- **492KB 巨型文件消失**。
+- `recharts` 被隔离成独立的 Chunk，仅在需要图表的页面加载。
+- `lucide-react` 恢复正常的 Tree Shaking，只打包用到的图标（几KB）。
+- **误解澄清**: `lucide-react` 的官方导出别名（如 `import { CheckIcon }`） 其实是支持 Tree Shaking 的，无需手动 Hack，问题根源在于 Webpack 的错误合并策略。
+
+> 💡 **深度阅读**：关于 Webpack 这种"好心办坏事"的合并策略及其背后的 HTTP 协议历史背景，请阅读专项分析文档：[📦 Webpack 打包策略深度解析：为什么我的 Icon 包里有图表？](./WEBPACK_SPLIT_CHUNKS_ISSUE.md)
+
 #### 📦 提炼共性：通用延迟加载组件 (Generic LazyInteraction)
 
 **反思**: 在完成 `ChatDialog` 和 `ModeToggle` 的延迟加载后，我们发现两者的代码模式高度相似：

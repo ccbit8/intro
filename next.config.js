@@ -120,10 +120,20 @@ const nextConfig = {
     pagesBufferLength: 5, // 保留最近 5 个页面
   },
 
+  // ✅ 强制模块化导入 Lucide React (Tree Shaking)
+  // 这是为了配合 standalone 模式，强制将 import 重写为具体文件路径，
+  // 这样 Next.js 的文件追踪器（File Tracer）就不会把整个包都复制进去。
+  // modularizeImports: {
+  //   'lucide-react': {
+  //     transform: 'lucide-react/dist/esm/icons/{{kebabCase member}}',
+  //     skipDefaultConversion: true,
+  //   },
+  // },
+
   // ✅ 性能相关的 experimental 特性
   experimental: {
     // optimizeCss: true, // 启用关键 CSS 内联优化 (moved to manual post-build script)
-    optimizePackageImports: ['recharts', 'lucide-react'], // 优化按需导入
+    optimizePackageImports: ['recharts', 'lucide-react'], // 恢复 lucide-react 优化
   },
 
   // 为了便于分析，给 Webpack 的 chunk 和 module 使用可读名称
@@ -133,7 +143,28 @@ const nextConfig = {
       config.optimization = config.optimization || {}
       config.optimization.chunkIds = 'named'
       config.optimization.moduleIds = 'named'
-      // 保留 Next.js 默认的 chunkFilename，避免与内置路径约定冲突
+      
+      // 🔪 强制切割：防止 Lucide 和 Recharts 纠缠在一起
+      config.optimization.splitChunks = {
+        ...config.optimization.splitChunks,
+        cacheGroups: {
+          ...(config.optimization.splitChunks?.cacheGroups || {}),
+          recharts: {
+            name: 'recharts',
+            test: /[\\/]node_modules[\\/]recharts[\\/]/,
+            chunks: 'all',
+            priority: 20,
+            enforce: true
+          },
+          lucide: {
+            name: 'lucide-react',
+            test: /[\\/]node_modules[\\/]lucide-react[\\/]/,
+            chunks: 'all',
+            priority: 20,
+            enforce: true
+          }
+        }
+      }
     }
     return config
   },
