@@ -90,7 +90,7 @@ export default function Home() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
               {
                 projects.map((project, index) => (
-                  <Card key={project.name} project={project} priority={false} />
+                  <Card key={project.name} project={project} priority={index < 4} />
                 ))
               }
             </div>

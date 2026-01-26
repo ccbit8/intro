@@ -44,6 +44,7 @@ export function ChartRadarLabelCustom() {
         >
           <RadarChart
             data={chartData}
+            outerRadius="70%"
             margin={{
               top: 10,
               right: 10,
@@ -98,8 +99,7 @@ export function ChartRadarLabelCustom() {
               stroke="url(#radarStroke)"
               strokeWidth={2.2}
               fillOpacity={0.78}
-              animationDuration={900}
-              animationEasing="ease-out"
+              animationDuration={0}
             />
           </RadarChart>
         </ChartContainer>
