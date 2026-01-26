@@ -15,9 +15,14 @@ import LazyChat from "@/components/ai/chat-lazy";
 
 // 📉 性能优化：动态导入重型组件 (Recharts ~500KB)
 // ssr: false 确保它只在客户端渲染，且独立于主 Bundle
+// loading 占位符使用骨架屏样式，避免首屏空白
 const IndexRadar = nextDynamic(() => import('@/app/_components/index-radar'), {
   ssr: false,
-  loading: () => <div className="aspect-square w-72 sm:w-80 h-auto" />,
+  loading: () => (
+    <div className="aspect-square w-72 sm:w-80 h-auto bg-muted rounded-lg animate-pulse flex items-center justify-center">
+      <div className="text-xs text-muted-foreground">Loading chart...</div>
+    </div>
+  ),
 })
 
 // 延迟加载非关键组件
@@ -65,7 +70,6 @@ export default function Home() {
           </div>
         </div>
         <div className="flex-1 min-h-full flex flex-col">
-          <LoadingProvider>
           <div className="grid grid-cols-1 md:grid-cols-2 pb-4">
             <div className="grid pb-4 md:pb-0 md:pr-4">
               <div className="flex flex-col gap-4 pb-4 border-b border-border">
@@ -79,7 +83,9 @@ export default function Home() {
             </div>
             <div className="flex flex-col gap-3 md:border-l border-border md:pl-4 md:pt-0 md:border-t-0 border-t pt-4">
               <h3 className="text-xl font-cal">Visual</h3>
-              <IndexRadar />
+              <LoadingProvider>
+                <IndexRadar />
+              </LoadingProvider>
             </div>
           </div>
           <div className="pt-4 border-t border-border flex flex-col gap-3">
@@ -87,12 +93,11 @@ export default function Home() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
               {
                 projects.map((project, index) => (
-                  <Card key={project.name} project={project} priority={index < 4} />
+                  <Card key={project.name} project={project} priority={false} />
                 ))
               }
             </div>
           </div>
-          </LoadingProvider>
           <div className="pt-4 border-t border-border flex flex-col gap-3">
             <h3 className="text-xl font-cal">Notes</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
@@ -113,42 +118,15 @@ export default function Home() {
               }
             </div>
           </div>
-
-          {/* <div className="pt-4 border-t border-border flex flex-col gap-3">
-            <h3 className="text-xl font-cal">Snippets</h3>
-            <Accordion
-              type="single"
-              collapsible
-              // defaultValue={snippets[0].file}
-            >
-              {snippets.map((snippet) => (
-                <AccordionItem key={snippet.slug} value={snippet.file}>
-                  <AccordionTrigger id={snippet.file}>
-                    <code>{snippet.file}</code>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <Snippet snippet={snippet} />
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </div> */}
         <div>
           <p className="text-center text-muted-foreground text-sm mb-1">
             Powered by{" "}
-            <a
-              className="text-foreground underline hover:no-underline"
-              href="https://nextjs.org/"
-            >
+            <a className="text-foreground underline hover:no-underline" href="https://nextjs.org/" >
               Next.js
             </a>
           </p>
           <p className="text-center text-muted-foreground text-xs">
-            <a
-              href="https://beian.miit.gov.cn/"
-              target="_blank"
-              style={{ color: "inherit", textDecoration: "underline" }}
-            >
+            <a href="https://beian.miit.gov.cn/" target="_blank" style={{ color: "inherit", textDecoration: "underline" }} >
               粤ICP备2023063699号
             </a>
           </p>

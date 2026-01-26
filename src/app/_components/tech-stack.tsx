@@ -1,6 +1,6 @@
 "use client"
 import { Boxes, Code2, Database, GitBranch, Globe, Layers, Server, Cpu, Box, CloudCog, Terminal, Component } from "lucide-react"
-import React, { useEffect, useState } from "react"
+import React from "react"
 
 interface TechItem {
   name: string
@@ -29,12 +29,6 @@ const techList: TechItem[] = [
 ]
 
 export default function TechStack() {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => {
-    const timer = requestAnimationFrame(() => setMounted(true))
-    return () => cancelAnimationFrame(timer)
-  }, [])
-
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
@@ -43,7 +37,7 @@ export default function TechStack() {
           return (
             <div
               key={t.name}
-              style={mounted ? { animation: `fadeUp 500ms cubic-bezier(.22,.82,.24,1) ${delay}ms forwards` } : { opacity: 0, transform: 'translateY(12px)' }}
+              style={{ animation: `fadeUp 500ms cubic-bezier(.22,.82,.24,1) ${delay}ms forwards` }}
               className="group flex flex-col items-center justify-center gap-1 rounded-md border border-border/60 bg-muted/40 hover:bg-muted/70 transition-colors p-2 shadow-[inset_0_0_0_1px_var(--border)] will-change-transform"
               title={t.name}
             >

@@ -296,6 +296,38 @@ sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
 
 ---
 
+### 6️⃣ TechStack 首帧可见性优化
+
+**文件**: `src/app/_components/tech-stack.tsx`
+
+**问题**: 仅需提醒性的动画效果，不需要“从空白到出现”的延迟。`useEffect + mounted` 导致首屏短暂空白/半透明。
+
+**优化方案**:
+- 移除 `useEffect + useState` 的挂载延迟，初始直接渲染内容。
+- 保留渐入动画，动画随挂载同帧启动（递增 40ms 延迟阶梯）。
+
+**改动内容**:
+
+```tsx
+// ❌ 之前：挂载后再设 mounted=true
+const [mounted, setMounted] = useState(false)
+useEffect(() => {
+  const timer = requestAnimationFrame(() => setMounted(true))
+  return () => cancelAnimationFrame(timer)
+}, [])
+// style={mounted ? {...} : { opacity: 0, transform: 'translateY(12px)' }}
+
+// ✅ 之后：直接渲染，动画立即执行
+style={{ animation: `fadeUp 500ms cubic-bezier(.22,.82,.24,1) ${delay}ms forwards` }}
+```
+
+**收益**:
+- 首屏不再空白，用户立即看到内容。
+- 去掉多余状态/副作用，组件更简单。
+- 如需等待其他加载信号，未来可再加独立控制逻辑。
+
+---
+
 ## 📈 性能指标详解
 
 ### Web Vitals 目标值

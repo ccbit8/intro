@@ -198,7 +198,7 @@ Next.js 在运行时自动生成：
   <Card 
     key={project.name} 
     project={project} 
-    priority={index < 4}  // 仅前 4 个开启优先加载
+    // priority={index < 4}  // 仅前 4 个开启优先加载（暂时关闭，影响图表和顶部卡片动画渲染）
   />
 ))}
 
@@ -293,6 +293,25 @@ Next.js 在运行时自动生成：
 - **After**: 关键样式直接内联在 HTML 中 (`<style>...</style>`)，非关键样式使用 `link media="print" onload="this.media='all'"` 异步加载。
 
 #### 第二幕：幽灵资源 (404 Errors)
+
+#### 第五阶段：TechStack 首帧可见性 (Act 5: Avoid Blank State)
+**场景**: TechStack 只是提醒性的特效，不需要“从空白到出现”的过渡；延迟挂载反而造成首屏短暂无内容。
+
+**行动**:
+1. **移除挂载延迟**: 删除 `useEffect + mounted` 首帧延迟逻辑，初始直接渲染内容。
+2. **保留轻动画**: 仍使用渐入动画，但动画与挂载同帧启动，避免白屏空档。
+
+```tsx
+// ✅ 解决方案 5.1: 去除首帧空白 (src/app/_components/tech-stack.tsx)
+// Before: useState + useEffect + 初始 opacity 0
+// After: 直接渲染，动画随挂载即刻执行
+style={{ animation: `fadeUp 500ms cubic-bezier(.22,.82,.24,1) ${delay}ms forwards` }}
+```
+
+**收益**:
+- 首屏不再出现空白/半透明状态，用户立即看到内容。
+- 代码更简单，无多余状态/副作用。
+- 如果未来需要等待某个加载信号，再单独加控制逻辑即可。
 **问题**: 访问页面时控制台出现大量 404 错误 (`fonts/CalSans-SemiBold.ttf`, `script.js`, `styles.css`)。
 **Lighthouse 警告**: `Avoid chaining critical requests`
 **原因分析**:
