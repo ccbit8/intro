@@ -35,7 +35,7 @@ export const projects: ProjectItem[] = [
     name: "GameDemo",
     desc: "",
     link: "https://ccoding.cn/web-desktop/",
-    image: "images/preview/fpdemo.png",
+    image: "/images/preview/fpdemo.png",
   },
   {
     name: "Fujica Center",
