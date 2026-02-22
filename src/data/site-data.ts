@@ -23,7 +23,7 @@ export const projects: ProjectItem[] = [
   },
   {
     name: "芃禾托育",
-    nameZh: "芃禾托育",
+    nameZh: "朗朗托育",
     slug: "ph",
     image: "/images/preview/ph.png",
     link: "/miniapp/ph",

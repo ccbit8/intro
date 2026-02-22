@@ -18,6 +18,12 @@ const myFont = localFont({
   display: 'swap',
 });
 
+const chineseFont = localFont({
+  src: "./public/fonts/XiangJiaoKuanMaoShuaLingGanTi-2.ttf",
+  variable: "--font-cny-zh",
+  display: 'swap',
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://caelus.cc"),
   title: "个人简介",
@@ -44,7 +50,7 @@ export default function RootLayout({
         />
       </head>
       
-        <body className={`${inter.className} ${myFont.variable}`}>
+        <body className={`${inter.className} ${myFont.variable} ${chineseFont.variable}`}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <Background>{children}</Background>
             <Toaster />

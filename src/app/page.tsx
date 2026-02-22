@@ -86,8 +86,8 @@ export default function Home() {
           </p>
           <p className="home-copy-cny text-sm">
             <LocalizedText
-              en="Happy Chinese New Year · New spring, same focus: keep building with care."
-              zh="新春快乐 · 新岁启封，继续认真写代码。"
+              en="Happy Chinese New Year · New spring · same focus: keep building with care."
+              zh="新春快乐 · 新岁启封 · 继续认真写代码"
             />
           </p>
           <div>
@@ -170,6 +170,14 @@ export default function Home() {
               Next.js
             </a>
             <span className="home-lang-zh"> 驱动</span>
+          </p>
+          <p className="text-center text-muted-foreground text-sm mb-1">
+            <span className="home-lang-en">Design by </span>
+            <span className="home-lang-zh">由 </span>
+            <a className="text-foreground underline hover:no-underline" href="https://github.com/undefcc" >
+              Hexuchao
+            </a>
+            <span className="home-lang-zh"> 独立设计、开发与部署</span>
           </p>
           <p className="text-center text-muted-foreground text-xs">
             <a href="https://beian.miit.gov.cn/" target="_blank" style={{ color: "inherit", textDecoration: "underline" }} >

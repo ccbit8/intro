@@ -116,6 +116,15 @@
   display: inline;
 }
 
+.lang-zh .home-lang-zh,
+.lang-zh .home-copy-cny,
+.lang-zh .home-cny-banner,
+.home-cny-couplet {
+  font-family: var(--font-cny-zh), var(--font-calsans), system-ui, sans-serif;
+  font-size: 1.12em;
+  line-height: 1.35;
+}
+
 .home-copy-cny {
   display: none;
 }
@@ -133,7 +142,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  @apply mx-auto w-fit rounded-sm border border-destructive/50 bg-destructive/10 px-7 py-2 text-sm font-semibold tracking-widest text-destructive;
+  @apply mx-auto w-fit rounded-sm border border-destructive/50 bg-destructive/10 px-7 py-2 text-lg tracking-widest text-destructive;
+  font-family: var(--font-cny-zh), var(--font-calsans), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 1.35rem;
 }
 
 .home-cny-theme .home-cny-panel {
@@ -206,7 +218,10 @@
     writing-mode: vertical-rl;
     text-orientation: upright;
     letter-spacing: 2px;
-    @apply rounded-md border border-destructive/40 bg-card/90 px-2 py-3 text-sm font-semibold text-destructive;
+    @apply rounded-md border border-destructive/40 bg-card/90 px-2 py-3 text-destructive;
+    font-size: 1.18rem !important;
+    line-height: 1.5;
+    font-weight: 500;
   }
 
   .home-cny-theme .home-cny-couplet-left {
