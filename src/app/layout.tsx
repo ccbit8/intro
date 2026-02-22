@@ -20,10 +20,10 @@ const myFont = localFont({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://caelus.cc"),
-  title: "Intro",
+  title: "个人简介",
   description: "A Intro page about cc",
   openGraph: {
-    title: "Intro",
+    title: "个人简介",
     description: "A Intro page about cc",
     images: "/og-image.png",
   }
@@ -37,6 +37,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var root=document.documentElement;var storedLang=localStorage.getItem("home-language");var lang=storedLang==="zh"||storedLang==="en"?storedLang:"en";root.classList.toggle("lang-en",lang==="en");root.classList.toggle("lang-zh",lang==="zh");root.setAttribute("lang",lang==="zh"?"zh-CN":"en");var storedTheme=localStorage.getItem("home-cny-theme-enabled");var cnyEnabled=storedTheme===null?true:storedTheme==="1";root.classList.toggle("home-cny-theme",cnyEnabled);}catch(e){}})();`,
+          }}
+        />
       </head>
       
         <body className={`${inter.className} ${myFont.variable}`}>

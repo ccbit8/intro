@@ -54,13 +54,13 @@ export function ChartRadarLabelCustom() {
           >
             <defs>
               <radialGradient id="radarFill" cx="50%" cy="50%" r="55%">
-                <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.70} />
-                <stop offset="60%" stopColor="#60a5fa" stopOpacity={0.40} />
-                <stop offset="100%" stopColor="#93c5fd" stopOpacity={0.18} />
+                <stop offset="0%" stopColor="var(--radar-fill-start, #3b82f6)" stopOpacity={0.70} />
+                <stop offset="60%" stopColor="var(--radar-fill-mid, #60a5fa)" stopOpacity={0.40} />
+                <stop offset="100%" stopColor="var(--radar-fill-end, #93c5fd)" stopOpacity={0.18} />
               </radialGradient>
               <linearGradient id="radarStroke" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#60a5fa" />
-                <stop offset="100%" stopColor="#3b82f6" />
+                <stop offset="0%" stopColor="var(--radar-stroke-start, #60a5fa)" />
+                <stop offset="100%" stopColor="var(--radar-stroke-end, #3b82f6)" />
               </linearGradient>
             </defs>
             <ChartTooltip

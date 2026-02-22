@@ -5,7 +5,7 @@ import Image from "next/image"
 import { memo, useEffect, useRef } from "react"
 
 // 更紧凑的小卡片：减少内边距、显示页面预览图
-export interface BasicItem { name: string; link: string; image: string; desc?: string }
+export interface BasicItem { name: string; nameZh?: string; link: string; image: string; desc?: string }
 
 function CardProject({ project, priority = false }: { project?: BasicItem, priority?: boolean }) {
   // 判断是否为站内详情页（如 /miniapp/xxx）
@@ -40,8 +40,10 @@ function CardProject({ project, priority = false }: { project?: BasicItem, prior
                 </div>
               )}
             </div>
-            <CardTitle className="text-[11px] sm:text-xs font-medium mb-0.5 text-center truncate hover:text-primary transition-colors" title={project?.name}>
-              {project?.name}
+            <CardTitle className="text-[11px] sm:text-xs font-medium mb-0.5 text-center truncate hover:text-primary transition-colors" title={project?.nameZh ? `${project?.name} / ${project?.nameZh}` : project?.name}>
+              <span className="home-lang-en">{project?.name}</span>
+              <span className="home-lang-zh">{project?.nameZh || project?.name}</span>
+              <span className="home-cny-name-lantern"> 🏮</span>
             </CardTitle>
             </a>
           ) : (
@@ -63,8 +65,10 @@ function CardProject({ project, priority = false }: { project?: BasicItem, prior
                 </div>
               )}
             </div>
-            <CardTitle className="text-[11px] sm:text-xs font-medium mb-0.5 text-center truncate hover:text-primary transition-colors" title={project?.name}>
-              {project?.name}
+            <CardTitle className="text-[11px] sm:text-xs font-medium mb-0.5 text-center truncate hover:text-primary transition-colors" title={project?.nameZh ? `${project?.name} / ${project?.nameZh}` : project?.name}>
+              <span className="home-lang-en">{project?.name}</span>
+              <span className="home-lang-zh">{project?.nameZh || project?.name}</span>
+              <span className="home-cny-name-lantern"> 🏮</span>
             </CardTitle>
             </Link>
           )}

@@ -39,6 +39,12 @@
     --chart-3: oklch(0.398 0.07 227.392);
     --chart-4: oklch(0.828 0.189 84.429);
     --chart-5: oklch(0.769 0.188 70.08);
+
+    --radar-fill-start: #3b82f6;
+    --radar-fill-mid: #60a5fa;
+    --radar-fill-end: #93c5fd;
+    --radar-stroke-start: #60a5fa;
+    --radar-stroke-end: #3b82f6;
   }
 
   .dark {
@@ -96,6 +102,155 @@
 .light pre[data-theme="dark"],
 .light code[data-theme="dark"] {
   display: none;
+}
+
+.home-lang-zh {
+  display: none;
+}
+
+.lang-zh .home-lang-en {
+  display: none;
+}
+
+.lang-zh .home-lang-zh {
+  display: inline;
+}
+
+.home-copy-cny {
+  display: none;
+}
+
+.home-cny-banner {
+  display: none;
+}
+
+.home-cny-theme .home-copy-cny {
+  display: block;
+  @apply text-destructive;
+}
+
+.home-cny-theme .home-cny-banner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  @apply mx-auto w-fit rounded-sm border border-destructive/50 bg-destructive/10 px-7 py-2 text-sm font-semibold tracking-widest text-destructive;
+}
+
+.home-cny-theme .home-cny-panel {
+  @apply border-destructive/40 bg-accent/60;
+}
+
+.home-cny-theme .home-section-title {
+  @apply text-destructive;
+}
+
+.home-cny-theme .home-capability-item {
+  @apply border-destructive/40;
+}
+
+.home-cny-theme .home-capability-icon {
+  @apply border border-destructive/30 bg-destructive/5;
+}
+
+.home-cny-theme .home-capability-icon svg {
+  @apply text-destructive;
+}
+
+.home-cny-theme .home-cny-toggle-text {
+  @apply text-destructive;
+}
+
+.home-cny-theme {
+  --radar-fill-start: #ef4444;
+  --radar-fill-mid: #f87171;
+  --radar-fill-end: #fca5a5;
+  --radar-stroke-start: #f87171;
+  --radar-stroke-end: #dc2626;
+}
+
+.home-cny-decor {
+  display: none;
+}
+
+.home-cny-couplet {
+  display: none;
+}
+
+.home-cny-name-lantern {
+  display: none;
+}
+
+.home-cny-theme .home-cny-name-lantern {
+  display: inline;
+}
+
+@media (min-width: 1024px) {
+  .home-cny-theme .home-cny-decor {
+    display: block;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 20;
+    --home-main-half: min(640px, calc(50vw - 24px));
+    --home-decor-gap: 120px;
+  }
+
+  .home-cny-theme .home-cny-couplet {
+    display: block;
+    position: fixed;
+    top: clamp(280px, 32vh, 360px);
+    z-index: 9;
+    pointer-events: none;
+    --home-main-half: min(640px, calc(50vw - 24px));
+    --home-couplet-gap: 74px;
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    letter-spacing: 2px;
+    @apply rounded-md border border-destructive/40 bg-card/90 px-2 py-3 text-sm font-semibold text-destructive;
+  }
+
+  .home-cny-theme .home-cny-couplet-left {
+    left: calc(50vw - var(--home-main-half) - var(--home-couplet-gap));
+  }
+
+  .home-cny-theme .home-cny-couplet-right {
+    right: calc(50vw - var(--home-main-half) - var(--home-couplet-gap));
+  }
+
+  .home-cny-decor-item {
+    position: absolute;
+    font-size: 28px;
+    line-height: 1;
+    animation: home-cny-float 3.6s ease-in-out infinite;
+  }
+
+  .home-cny-top-left,
+  .home-cny-top-right {
+    font-size: 20px;
+    letter-spacing: 2px;
+    animation-duration: 4.2s;
+  }
+
+  .home-cny-top-left {
+    left: calc(50vw - var(--home-main-half) - var(--home-decor-gap) - 8px);
+    top: 34px;
+  }
+
+  .home-cny-top-right {
+    right: calc(50vw - var(--home-main-half) - var(--home-decor-gap) - 8px);
+    top: 34px;
+    animation-delay: 0.5s;
+  }
+}
+
+@keyframes home-cny-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 /* @media (prefers-color-scheme: dark) {
