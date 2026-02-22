@@ -4,7 +4,7 @@ import { Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const STORAGE_KEY = "home-language";
-export const DEFAULT_HOME_LANGUAGE: "en" | "zh" = "en";
+export const DEFAULT_HOME_LANGUAGE: "en" | "zh" = "zh";
 
 function applyLanguage(lang: "en" | "zh") {
   const root = document.documentElement;
