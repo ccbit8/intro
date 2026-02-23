@@ -145,7 +145,18 @@
   @apply mx-auto w-fit rounded-sm border border-destructive/50 bg-destructive/10 px-7 py-2 text-lg tracking-widest text-destructive;
   font-family: var(--font-cny-zh), var(--font-calsans), system-ui, sans-serif;
   font-weight: 500;
-  font-size: 1.35rem;
+  font-size: clamp(1rem, 3.5vw, 1.35rem);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 95vw;
+}
+
+/* 英文横幅允许换行 */
+.lang-en.home-cny-theme .home-cny-banner {
+  white-space: normal !important;
+  line-height: 1.4;
+  max-width: 90vw;
 }
 
 .home-cny-theme .home-cny-panel {

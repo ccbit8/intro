@@ -72,7 +72,7 @@ export default function Home() {
         <div className="home-cny-banner">
           <LocalizedText
             en="🧨 Happy Chinese New Year · Wishing You Prosperity and Joy"
-            zh="🧨 新春大吉 · 愿你万事顺遂，阖家安康"
+            zh="🧨 新春大吉 愿您万事顺遂 阖家安康"
           />
         </div>
         <div className="grid gap-4 text-center mx-auto max-w-2xl mt-12">
